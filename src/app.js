@@ -4,6 +4,8 @@ const wss = new WebSocketServer({ port: 8080 })
 
 const users = []
 
+const clients = new Set()
+
 function addUser (userName) {
   if (!users.includes(userName)) {
     users.push(userName)
@@ -27,11 +29,15 @@ wss.on('connection', (ws) => {
           result = true
         }
 
-        ws.send(JSON.stringify({
-          event: 'addUser',
-          userName: json.userName,
-          result
-        }))
+        clients.add(ws)
+
+        for (const client of clients) {
+          client.send(JSON.stringify({
+            event: 'addUser',
+            userName: json.userName,
+            result
+          }))
+        }
         break
       }
       case 'getUserList':
@@ -41,5 +47,21 @@ wss.on('connection', (ws) => {
         }))
         break
     }
+    ws.on('close', (ws) => {
+      users.splice(users.indexOf(json.userName), 1)
+
+      clients.delete(ws)
+
+      for (const client of clients) {
+        client.send(
+          JSON.stringify({
+            event: 'getUserList',
+            userList: users
+          })
+        )
+      }
+    })
+
+    clients.add(ws)
   })
 })
