@@ -34,6 +34,12 @@ wss.on('connection', (ws) => {
         }))
         break
       }
+      case 'getUserList':
+        ws.send(JSON.stringify({
+          event: 'getUserList',
+          userList: users
+        }))
+        break
     }
   })
 })
