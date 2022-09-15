@@ -46,6 +46,16 @@ wss.on('connection', (ws) => {
           userList: users
         }))
         break
+
+      case 'sendMessage':
+        for (const client of clients) {
+          client.send(JSON.stringify({
+            event: 'sendMessage',
+            userName: json.userName,
+            time: Date.now(),
+            message: json.message
+          }))
+        }
     }
     ws.on('close', (ws) => {
       users.splice(users.indexOf(json.userName), 1)
